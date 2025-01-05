@@ -1,0 +1,2 @@
+* * * * * /usr/local/bin/php /var/www/vestora-pemodal/artisan schedule:run >> /var/log/cron.log 2>&1
+* * * * * /usr/local/bin/php /var/www/vestora-admin/artisan schedule:run >> /var/log/cron.log 2>&1

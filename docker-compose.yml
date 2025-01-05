@@ -1,0 +1,63 @@
+services:
+  # nginx
+  nginx:
+    container_name: "${PROJECT_NAME}-nginx-latest"
+    image: "nginx"
+    ports:
+      - "80:80"
+    volumes:
+      - "../vestora-api:/var/www/vestora-api"
+      - "./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf"
+      - "./nginx/ssl:/etc/nginx/ssl"
+    depends_on:
+      - php
+    networks:
+      - bridge # Gunakan jaringan eksternal
+
+  # php
+  php:
+    build: ./php
+    container_name: "${PROJECT_NAME}-php-8.1.0-fpm"
+    image: "php-8.1.0-fpm-vestora"
+    volumes:
+      - "../vestora-api:/var/www/vestora-api"
+      - "./php/php.ini:/usr/local/etc/php/php.ini"
+    networks:
+      - bridge # Gunakan jaringan eksternal
+
+  # database
+  mysql:
+    container_name: "${PROJECT_NAME}-mysql-8"
+    image: "mysql:8"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=${PROJECT_NAME}
+      - TZ=Asia/Tokyo
+    ports:
+      - "3306:3306"
+    volumes:
+      - "./db/data:/var/lib/mysql"
+      - "./db/my.cnf:/etc/mysql/conf.d/my.cnf"
+      - "./db/sql:/docker-entrypoint-initdb.d"
+    networks:
+      - bridge # Gunakan jaringan eksternal
+
+  # phpmyadmin
+  phpmyadmin:
+    container_name: "${PROJECT_NAME}-phpmyadmin"
+    image: "phpmyadmin/phpmyadmin"
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=mysql
+    ports:
+      - "8080:80"
+    volumes:
+      - "./phpmyadmin/sessions:/sessions"
+      - "./phpmyadmin/phpmyadmin-misc.ini:/usr/local/etc/php/conf.d/phpmyadmin-misc.ini"
+    networks:
+      - bridge # Gunakan jaringan eksternal
+
+# Networks bagian eksternal
+networks:
+  bridge:
+    driver: bridge
